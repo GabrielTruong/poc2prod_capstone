@@ -77,19 +77,19 @@ class BaseTextCategorizationDataset:
         returns number of test samples
         (test set size)
         """
-        return integer_floor(len(self._get_num_samples())*(1-self.train_ratio))
+        return integer_floor(self._get_num_samples()*(1-self.train_ratio))+1
 
     def _get_num_train_batches(self):
         """
         returns number of train batches
         """
-        return integer_floor((self._get_num_train_samples()/self.batch_size))
+        return (self._get_num_train_samples()/self.batch_size)
 
     def _get_num_test_batches(self):
         """
         returns number of test batches
         """
-        return integer_floor((self._get_num_test_samples()/self.batch_size))
+        return (self._get_num_test_samples()/self.batch_size)
 
 
     def get_train_batch(self):
@@ -210,7 +210,7 @@ class LocalTextCategorizationDataset(BaseTextCategorizationDataset):
                 keep only tag_position = position
                 """
                 df = df[df['tag_position']==position]
-                print(df)
+                
                 return df
 
             return filter_function
@@ -243,31 +243,38 @@ class LocalTextCategorizationDataset(BaseTextCategorizationDataset):
         """
         returns label list
         """
-        label = self._dataset['tag_unique'].unique()
+        label = self._dataset['tag_name'].unique()
         return label
 
     def _get_num_samples(self):
         """
         returns number of samples in dataset
         """
-        num_samples = self._dataset.shape()[0]
+        num_samples = self._dataset.shape[0]
         return num_samples
 
     def get_train_batch(self):
         i = self.train_batch_index
-        # TODO: CODE HERE
         # takes x_train between i * batch_size to (i + 1) * batch_size, and apply preprocess_text
-        #next_x =
-        # TODO: CODE HERE
+        next_x = self.x_train.iloc[i*self.batch_size:(i+1)*self.batch_size]
         # takes y_train between i * batch_size to (i + 1) * batch_size
-        #next_y =
+        next_y = self.y_train[i*self.batch_size:(i+1)*self.batch_size]
         # When we reach the max num batches, we start anew
         self.train_batch_index = (self.train_batch_index + 1) % self._get_num_train_batches()
-        #return next_x, next_y
-        pass
+
+        return next_x, next_y
+        
     def get_test_batch(self):
         """
         it does the same as get_train_batch for the test set
         """
-        # TODO: CODE HERE
-        pass
+        i = self.test_batch_index
+        # takes x_train between i * batch_size to (i + 1) * batch_size, and apply preprocess_text
+        next_x = self.x_test.iloc[i*self.batch_size:(i+1)*self.batch_size]
+        # takes y_train between i * batch_size to (i + 1) * batch_size
+        next_y = self.y_test[i*self.batch_size:(i+1)*self.batch_size]
+        # When we reach the max num batches, we start anew
+        self.test_batch_index = (self.test_batch_index + 1) % self._get_num_test_batches()
+        
+        return next_x, next_y
+        
