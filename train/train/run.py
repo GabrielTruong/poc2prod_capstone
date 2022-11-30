@@ -5,7 +5,7 @@ import time
 import logging
 
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense
+from tensorflow.keras.layers import Dense,Input
 
 from preprocessing.preprocessing.embeddings import embed
 from preprocessing.preprocessing.utils import LocalTextCategorizationDataset
@@ -35,22 +35,32 @@ def train(dataset_path, train_conf, model_path, add_timestamp):
     else:
         artefacts_path = model_path
 
-    # TODO: CODE HERE
     # instantiate a LocalTextCategorizationDataset, use embed method from preprocessing module for preprocess_text param
     # use train_conf for other needed params
-    dataset =
+    dataset = LocalTextCategorizationDataset(dataset_path,
+    batch_size=train_conf['batch_size'],
+    min_samples_per_label=train_conf['min_samples_per_label'],preprocess_text=embed)
 
     logger.info(dataset)
+    print("ICI ?",dataset.get_train_sequence().__getitem__(0))
 
     # TODO: CODE HERE
     # instantiate a sequential keras model
     # add a dense layer with relu activation
     # add an output layer (multiclass classification problem)
-    model =
+    model = Sequential([
+        Input(shape=(dataset.get_train_batch()[0].shape[-1])),
+        Dense(train_conf['dense_dim'],activation="relu"),
+        Dense(units=dataset.get_num_labels(),activation="softmax")
+    ])
 
+    model.compile(optimizer="adam",loss="sparse_categorical_crossentropy",metrics=["accuracy"])
     # TODO: CODE HERE
     # model fit using data sequences
-    train_history =
+    train_history = model.fit(
+        dataset.get_train_sequence().__getitem__(0),
+        dataset.get_train_sequence().__getitem__(1),epochs=train_conf['epochs'],
+        verbose=train_conf["verbose"],batch_size=train_conf["batch_size"])
 
     # scores
     scores = model.evaluate_generator(dataset.get_test_sequence(), verbose=0)
