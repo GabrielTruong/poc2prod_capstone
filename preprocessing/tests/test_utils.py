@@ -6,7 +6,7 @@ from preprocessing.preprocessing import utils
 
 
 class TestBaseTextCategorizationDataset(unittest.TestCase):
-    def test__get_num_train_samples(self):
+    def test_get_num_train_samples(self):
         """
         we want to test the class BaseTextCategorizationDataset
         we use a mock which will return a value for the not implemented methods
@@ -19,22 +19,37 @@ class TestBaseTextCategorizationDataset(unittest.TestCase):
         # we assert that _get_num_train_samples will return 100 * train_ratio = 80
         self.assertEqual(base._get_num_train_samples(), 80)
 
-    def test__get_num_train_batches(self):
+    def test_get_num_train_batches(self):
         """
         same idea as what we did to test _get_num_train_samples
         """
-        # TODO: CODE HERE
-        pass
+        base = utils.BaseTextCategorizationDataset(20, 0.8)
+        base._get_num_train_samples = MagicMock(return_value=80)
+        self.assertEqual(base._get_num_train_batches(), 4)
+        
 
-    def test__get_num_test_batches(self):
-        # TODO: CODE HERE
-        pass
+    def test_get_num_test_batches(self):
+        """
+        test
+        """
+        base = utils.BaseTextCategorizationDataset(20,0.8)
+        base._get_label_list = MagicMock(return_value=100)
+        self.assertEqual(base._get_num_test_batches(),5)
+
+
     def test_get_index_to_label_map(self):
-        # TODO: CODE HERE
-        pass
+        base = utils.BaseTextCategorizationDataset(20,0.8)
+        base._get_num_test_samples = MagicMock(return_value=["Test","OK"])        
+        
+        self.assertEqual(base.get_index_to_label_map(),{0:"Test",1:"OK"})
+
+
     def test_index_to_label_and_label_to_index_are_identity(self):
-        # TODO: CODE HERE
-        pass
+        base = utils.BaseTextCategorizationDataset(20,0.8)
+        base._get_num_test_samples = MagicMock(return_value=["Test","OK"])        
+        
+        self.assertEqual(base.get_index_to_label_map(),{"Test":0,"OK":1})
+
     def test_to_indexes(self):
         # TODO: CODE HERE
         pass
@@ -62,9 +77,9 @@ class TestLocalTextCategorizationDataset(unittest.TestCase):
         # we confirm that the dataset and what we expected to be are the same thing
         pd.testing.assert_frame_equal(dataset, expected)
 
-    def test__get_num_samples_is_correct(self):
+    def test_get_num_samples_is_correct(self):
         # TODO: CODE HERE
-        pass
+        
     def test_get_train_batch_returns_expected_shape(self):
         # TODO: CODE HERE
         pass
