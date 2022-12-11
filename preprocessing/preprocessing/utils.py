@@ -28,7 +28,8 @@ class _SimpleSequence(Sequence):
         return self.num_batches_method()
 
     def __getitem__(self, idx):
-        return self.get_batch_method()
+        return self.get_batch_method[idx]
+        #return self.get_batch_method()
 
 
 class BaseTextCategorizationDataset:
@@ -53,7 +54,7 @@ class BaseTextCategorizationDataset:
         """
         returns the number of labels
         """
-        return len(self._get_label_list)
+        return len(self._get_label_list())
 
 
     def _get_num_samples(self):
@@ -77,19 +78,19 @@ class BaseTextCategorizationDataset:
         returns number of test samples
         (test set size)
         """
-        return integer_floor(len(self._get_num_samples())*(1-self.train_ratio))
+        return integer_floor(self._get_num_samples()*(1-self.train_ratio))+1
 
     def _get_num_train_batches(self):
         """
         returns number of train batches
         """
-        return integer_floor((self._get_num_train_samples()/self.batch_size))
+        return (self._get_num_train_samples()/self.batch_size)
 
     def _get_num_test_batches(self):
         """
         returns number of test batches
         """
-        return integer_floor((self._get_num_test_samples()/self.batch_size))
+        return (self._get_num_test_samples()/self.batch_size)
 
 
     def get_train_batch(self):
@@ -111,6 +112,7 @@ class BaseTextCategorizationDataset:
         from label list, returns a map index -> label
         (dictionary index: label)
         """
+        
         return {i: self._get_label_list()[i] for i in range(len(self._get_label_list()))}
 
     def get_label_to_index_map(self):
@@ -118,28 +120,31 @@ class BaseTextCategorizationDataset:
         from index -> label map, returns label -> index map
         (reverse the previous dictionary)
         """
-        # TODO: CODE HERE
-        pass
+        labeled_dic = {self._get_label_list()[i]: i for i in range(len(self._get_label_list()))}
+        return labeled_dic
+        
+        
 
     def to_indexes(self, labels):
         """
         from a list of labels, returns a list of indexes
         """
-        # TODO: CODE HERE
-        pass
+        list_indexes = [self.get_label_to_index_map()[label] for label in labels]
+        
+        return list_indexes
 
     def get_train_sequence(self):
         """
         returns a train sequence of type _SimpleSequence
         """
-        return _SimpleSequence(self.get_train_batch, self._get_num_train_batches)
+        return _SimpleSequence(self.get_train_batch(), self._get_num_train_batches())
 
     def get_test_sequence(self):
         """
         returns a test sequence of type _SimpleSequence
         """
-        # TODO: CODE HERE
-        pass
+        return _SimpleSequence(self.get_test_batch(), self._get_num_train_batches())
+
 
     def __repr__(self):
         return self.__class__.__name__ + \
@@ -171,9 +176,8 @@ class LocalTextCategorizationDataset(BaseTextCategorizationDataset):
         assert self._get_num_train_batches() > 0
         assert self._get_num_test_batches() > 0
 
-        # TODO: CODE HERE
         # from self._dataset, compute the label list
-        #self._label_list =
+        self._label_list = self._get_label_list()
 
         y = self.to_indexes(self._dataset['tag_name'])
         y = to_categorical(y, num_classes=len(self._label_list))
@@ -195,17 +199,20 @@ class LocalTextCategorizationDataset(BaseTextCategorizationDataset):
         """
 
         # reading dataset from filename path, dataset is csv
-        # TODO: CODE HERE
+        df = pd.read_csv(filename)
 
         # assert that columns are the ones expected
-        # TODO: CODE HERE
+        assert df.columns.to_list() == ["post_id","tag_name","tag_id","tag_position","title"]
+
 
         def filter_tag_position(position):
             def filter_function(df):
                 """
                 keep only tag_position = position
                 """
-                # TODO: CODE HERE
+                df = df[df['tag_position']==position]
+                
+                return df
 
             return filter_function
 
@@ -214,14 +221,22 @@ class LocalTextCategorizationDataset(BaseTextCategorizationDataset):
                 """
                 removes tags that are seen less than x times
                 """
-                # TODO: CODE HERE
+                
+                filtered_df = df["tag_id"].value_counts()>=x
+                index = filtered_df[filtered_df==True].index
+
+                df=df.loc[df['tag_id'].isin(index)]
+
+                return df
 
             return filter_function
 
         # use pandas.DataFrame.pipe to chain preprocessing steps
         # https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.pipe.html
         # return pre-processed dataset
-        # TODO: CODE HERE
+        dataset = df.pipe(filter_tag_position(0)).pipe(filter_tags_with_less_than_x_samples(min_samples_per_label))
+        #.pipe(filter_tags_with_less_than_x_samples(min_samples_per_label)))
+        return dataset
 
     # we need to implement the methods that are not implemented in the super class BaseTextCategorizationDataset
 
@@ -229,30 +244,38 @@ class LocalTextCategorizationDataset(BaseTextCategorizationDataset):
         """
         returns label list
         """
-        # TODO: CODE HERE
-        pass
+        label = self._dataset['tag_name'].unique()
+        return label
 
     def _get_num_samples(self):
         """
         returns number of samples in dataset
         """
-        # TODO: CODE HERE
-        pass
+        num_samples = self._dataset.shape[0]
+        return num_samples
+
     def get_train_batch(self):
         i = self.train_batch_index
-        # TODO: CODE HERE
         # takes x_train between i * batch_size to (i + 1) * batch_size, and apply preprocess_text
-        #next_x =
-        # TODO: CODE HERE
+        next_x = self.preprocess_text(self.x_train.iloc[int(i*self.batch_size):int((i+1)*self.batch_size)])
         # takes y_train between i * batch_size to (i + 1) * batch_size
-        #next_y =
+        next_y = self.y_train[int(i*self.batch_size):int((i+1)*self.batch_size)]
         # When we reach the max num batches, we start anew
         self.train_batch_index = (self.train_batch_index + 1) % self._get_num_train_batches()
-        #return next_x, next_y
-        pass
+
+        return next_x, next_y
+        
     def get_test_batch(self):
         """
         it does the same as get_train_batch for the test set
         """
-        # TODO: CODE HERE
-        pass
+        i = self.test_batch_index
+        # takes x_train between i * batch_size to (i + 1) * batch_size, and apply preprocess_text
+        next_x = self.x_test.iloc[i*self.batch_size:(i+1)*self.batch_size]
+        # takes y_train between i * batch_size to (i + 1) * batch_size
+        next_y = self.y_test[i*self.batch_size:(i+1)*self.batch_size]
+        # When we reach the max num batches, we start anew
+        self.test_batch_index = (self.test_batch_index + 1) % self._get_num_test_batches()
+        
+        return next_x, next_y
+        
