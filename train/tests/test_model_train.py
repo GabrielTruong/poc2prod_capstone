@@ -35,7 +35,6 @@ class TestTrain(unittest.TestCase):
     utils.LocalTextCategorizationDataset.load_dataset = MagicMock(return_value=load_dataset_mock())
 
     def test_train(self):
-        # TODO: CODE HERE
         # create a dictionary params for train conf
         params = {
                 "batch_size": 2,
@@ -50,7 +49,6 @@ class TestTrain(unittest.TestCase):
             # run a training
             accuracy, _ = run.train("fake",params,model_path="test",add_timestamp=True)
 
-        # TODO: CODE HERE
         # assert that accuracy is equal to 1.0
         self.assertEqual(accuracy,1.0)
 
