@@ -89,37 +89,46 @@ class TestLocalTextCategorizationDataset(unittest.TestCase):
             'title': ['title_1', 'title_2','title_3', 'title_4','title_5','title_6']
         }))
 
-        base = utils.LocalTextCategorizationDataset("fake-path",2,0.8,min_samples_per_label=3)
-
+        base = utils.LocalTextCategorizationDataset("fake-path",1,0.6,min_samples_per_label=2)
         self.assertEqual(base._get_num_samples(),3)
         
         
     def test_get_train_batch_returns_expected_shape(self):
         pd.read_csv = MagicMock(return_value=pd.DataFrame({
             'post_id': ['id_1', 'id_2','id_3','id_4','id_5','id_6'],
-            'tag_name': ['tag_a', 'tag_b','tag_a','tag_a','tag_b','tag_c'],
-            'tag_id': [1,2,1,1,2,3],
-            'tag_position': [0, 0,0,0,1,0],
-            'title': ['title_1', 'title_2','title_3', 'title_4','title_5','title_6']
+            'tag_name': ['tag_a', 'tag_b','tag_a','tag_a','tag_b','tag_b'],
+            'tag_id': [1, 2, 1, 1,2,2],
+            'tag_position': [0, 0, 0, 0,1,0],
+            'title': ['title_1', 'title_2','title_3', 'title_4','title_5', 'title_6']
         }))
+        base = utils.LocalTextCategorizationDataset("fake path",2,0.6,min_samples_per_label=2)  
 
-        base = utils.LocalTextCategorizationDataset("fake-path",batch_size=2,train_ratio=0.8,min_samples_per_label=3)
+        x , y = base.get_train_batch()
 
-        self.assertEqual(len(base.get_train_batch()[0]),2) and self.assertEqual(len(base.get_train_batch()[1]),2)         
-    
+        self.assertTupleEqual(x.shape,(2,)) and self.assertTupleEqual(y.shape,(2,2))
+ 
     def test_get_test_batch_returns_expected_shape(self):
         pd.read_csv = MagicMock(return_value=pd.DataFrame({
             'post_id': ['id_1', 'id_2','id_3','id_4','id_5','id_6'],
-            'tag_name': ['tag_a', 'tag_b','tag_a','tag_a','tag_b','tag_c'],
-            'tag_id': [1,2,1,1,2,3],
-            'tag_position': [0, 0,0,0,1,0],
-            'title': ['title_1', 'title_2','title_3', 'title_4','title_5','title_6']
+            'tag_name': ['tag_a', 'tag_b','tag_a','tag_a','tag_b','tag_b'],
+            'tag_id': [1, 2, 1, 1,2,2],
+            'tag_position': [0, 0, 0, 0,1,0],
+            'title': ['title_1', 'title_2','title_3', 'title_4','title_5', 'title_6']
         }))
+        base = utils.LocalTextCategorizationDataset("fake path",2,0.6,min_samples_per_label=2)  
 
-        base = utils.LocalTextCategorizationDataset("fake-path",batch_size=2,train_ratio=0.8,min_samples_per_label=3)
-
-        self.assertEqual(len(base.get_train_batch()[0]),2) and self.assertEqual(len(base.get_train_batch()[1]),2)
+        x , y = base.get_test_batch()
+        self.assertTupleEqual(x.shape,(2,)) and self.assertTupleEqual(y.shape,(2,2))
+ 
     
     def test_get_train_batch_raises_assertion_error(self):
-    
-        self.assertRaises(AssertionError,utils.LocalTextCategorizationDataset("fake-path",batch_size=2,train_ratio=0.8))
+        pd.read_csv = MagicMock(return_value=pd.DataFrame({
+            'post_id': ['id_1', 'id_2','id_3','id_4','id_5','id_6'],
+            'tag_name': ['tag_a', 'tag_b','tag_a','tag_a','tag_b','tag_b'],
+            'tag_id': [1, 2, 1, 1,2,2],
+            'tag_position': [1, 1, 1, 1,1,1],
+            'title': ['title_1', 'title_2','title_3', 'title_4','title_5', 'title_6']
+        }))
+        
+        with self.assertRaises(AssertionError):
+            utils.LocalTextCategorizationDataset("fake-path",batch_size=1,train_ratio=0.6,min_samples_per_label=2)
