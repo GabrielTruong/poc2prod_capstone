@@ -42,39 +42,42 @@ def train(dataset_path, train_conf, model_path, add_timestamp):
     min_samples_per_label=train_conf['min_samples_per_label'],preprocess_text=embed)
 
     logger.info(dataset)
-    print("ICI ?",dataset.get_train_sequence().__getitem__(0))
 
-    # TODO: CODE HERE
     # instantiate a sequential keras model
     # add a dense layer with relu activation
     # add an output layer (multiclass classification problem)
     model = Sequential([
-        Input(shape=(dataset.get_train_batch()[0].shape[-1])),
-        Dense(train_conf['dense_dim'],activation="relu"),
+        Dense(train_conf['dense_dim'],activation="relu",input_shape=(768,)),
         Dense(units=dataset.get_num_labels(),activation="softmax")
     ])
 
-    model.compile(optimizer="adam",loss="sparse_categorical_crossentropy",metrics=["accuracy"])
-    # TODO: CODE HERE
+    model.compile(optimizer="adam",loss="categorical_crossentropy",metrics=["accuracy"])
     # model fit using data sequences
     train_history = model.fit(
-        dataset.get_train_sequence().__getitem__(0),
-        dataset.get_train_sequence().__getitem__(1),epochs=train_conf['epochs'],
-        verbose=train_conf["verbose"],batch_size=train_conf["batch_size"])
+        dataset.get_train_sequence(), 
+        epochs=train_conf['epochs'],
+        verbose=train_conf["verbose"],
+        validation_data=dataset.get_test_sequence(),
+        )
+
 
     # scores
     scores = model.evaluate_generator(dataset.get_test_sequence(), verbose=0)
 
     logger.info("Test Accuracy: {:.2f}".format(scores[1] * 100))
 
-    # TODO: CODE HERE
     # create folder artefacts_path
+    os.mkdir(artefacts_path)
 
     # TODO: CODE HERE
     # save model in artefacts folder, name model.h5
+    #model.save(f"./{artefacts_path}/model.h5")
+
 
     # TODO: CODE HERE
     # save train_conf used in artefacts_path/params.json
+    #os.system("cp train/conf/train-conf.yml ")
+
 
     # TODO: CODE HERE
     # save labels index in artefacts_path/labels_index.json
