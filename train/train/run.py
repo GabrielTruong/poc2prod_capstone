@@ -38,8 +38,8 @@ def train(dataset_path, train_conf, model_path, add_timestamp):
     # instantiate a LocalTextCategorizationDataset, use embed method from preprocessing module for preprocess_text param
     # use train_conf for other needed params
     dataset = LocalTextCategorizationDataset(dataset_path,
-    batch_size=train_conf['batch_size'],
-    min_samples_per_label=train_conf['min_samples_per_label'],preprocess_text=embed)
+        batch_size=train_conf['batch_size'],
+        min_samples_per_label=train_conf['min_samples_per_label'],preprocess_text=embed)
 
     logger.info(dataset)
 
@@ -47,7 +47,7 @@ def train(dataset_path, train_conf, model_path, add_timestamp):
     # add a dense layer with relu activation
     # add an output layer (multiclass classification problem)
     model = Sequential([
-        Dense(train_conf['dense_dim'],activation="relu",input_shape=(768,)),
+        Dense(units=train_conf['dense_dim'],activation="relu",input_shape=(768,)),
         Dense(units=dataset.get_num_labels(),activation="softmax")
     ])
 
@@ -64,18 +64,19 @@ def train(dataset_path, train_conf, model_path, add_timestamp):
     scores = model.evaluate(dataset.get_test_sequence(), verbose=0)
 
     logger.info("Test Accuracy: {:.2f}".format(scores[1] * 100))
-
+    print()
+    print("ici,",scores)
+    print()
+    
     # create folder artefacts_path
-    os.mkdir(artefacts_path)
+    os.makedirs("train/data/artefacts/"+artefacts_path)
 
     # save model in artefacts folder, name model.h5
-    model.save(f"./{artefacts_path}/model.h5")
-
-
+    model.save(f"train/data/artefacts/{artefacts_path}/model.h5")
+    
     # save train_conf used in artefacts_path/params.json
-    with open(f'{artefacts_path}/params.json', 'w') as f:
+    with open(f'train/data/artefacts/{artefacts_path}/params.json', 'w') as f:
         json.dump(train_conf, f)
-    #os.system("cp train/conf/train-conf.yml ")
 
 
     # save labels index in artefacts_path/labels_index.json
