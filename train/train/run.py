@@ -80,13 +80,13 @@ def train(dataset_path, train_conf, model_path, add_timestamp):
 
 
     # save labels index in artefacts_path/labels_index.json
-    with open(f'{artefacts_path}/labels_index.json', 'w') as f:
+    with open(f'train/data/artefacts/{artefacts_path}/labels_index.json', 'w') as f:
         labels_index = dataset.get_index_to_label_map()
         json.dump(labels_index, f)
         
     # train_history.history is not JSON-serializable because it contains numpy arrays
     serializable_hist = {k: [float(e) for e in v] for k, v in train_history.history.items()}
-    with open(os.path.join(artefacts_path, "train_output.json"), "w") as f:
+    with open(os.path.join(f"train/data/artefacts/"+artefacts_path, "train_output.json"), "w") as f:
         json.dump(serializable_hist, f)
 
     return scores[1], artefacts_path
