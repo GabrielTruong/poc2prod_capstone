@@ -28,7 +28,7 @@ class _SimpleSequence(Sequence):
         return self.num_batches_method()
 
     def __getitem__(self, idx):
-        return self.get_batch_method[idx]
+        return self.get_batch_method()
         #return self.get_batch_method()
 
 
@@ -69,6 +69,7 @@ class BaseTextCategorizationDataset:
         returns number of train samples
         (training set size)
         """
+        
         return integer_floor(self._get_num_samples()*self.train_ratio)
 
 
@@ -78,19 +79,20 @@ class BaseTextCategorizationDataset:
         returns number of test samples
         (test set size)
         """
-        return integer_floor(self._get_num_samples()*(1-self.train_ratio))+1
+        return self._get_num_samples() - self._get_num_train_samples()
 
     def _get_num_train_batches(self):
         """
         returns number of train batches
         """
-        return (self._get_num_train_samples()/self.batch_size)
+  
+        return integer_floor(self._get_num_train_samples()/self.batch_size)
 
     def _get_num_test_batches(self):
         """
         returns number of test batches
         """
-        return (self._get_num_test_samples()/self.batch_size)
+        return integer_floor(self._get_num_test_samples()/self.batch_size)
 
 
     def get_train_batch(self):
@@ -137,13 +139,13 @@ class BaseTextCategorizationDataset:
         """
         returns a train sequence of type _SimpleSequence
         """
-        return _SimpleSequence(self.get_train_batch(), self._get_num_train_batches())
+        return _SimpleSequence(self.get_train_batch, self._get_num_train_batches)
 
     def get_test_sequence(self):
         """
         returns a test sequence of type _SimpleSequence
         """
-        return _SimpleSequence(self.get_test_batch(), self._get_num_train_batches())
+        return _SimpleSequence(self.get_test_batch, self._get_num_test_batches)
 
 
     def __repr__(self):
@@ -187,7 +189,7 @@ class LocalTextCategorizationDataset(BaseTextCategorizationDataset):
             y,
             train_size=self._get_num_train_samples(),
             stratify=y)
-
+        print("XTRAIN",self.x_train)
         self.train_batch_index = 0
         self.test_batch_index = 0
 
@@ -256,13 +258,14 @@ class LocalTextCategorizationDataset(BaseTextCategorizationDataset):
 
     def get_train_batch(self):
         i = self.train_batch_index
+        print("X TRAIN in function get_train_batch",self.x_train)
         # takes x_train between i * batch_size to (i + 1) * batch_size, and apply preprocess_text
-        next_x = self.preprocess_text(self.x_train.iloc[int(i*self.batch_size):int((i+1)*self.batch_size)])
+        next_x = self.preprocess_text(self.x_train[i*self.batch_size:(i+1)*self.batch_size])
+        print("embeded or not?", next_x.shape)
         # takes y_train between i * batch_size to (i + 1) * batch_size
-        next_y = self.y_train[int(i*self.batch_size):int((i+1)*self.batch_size)]
+        next_y = self.y_train[i*self.batch_size:(i+1)*self.batch_size]
         # When we reach the max num batches, we start anew
         self.train_batch_index = (self.train_batch_index + 1) % self._get_num_train_batches()
-
         return next_x, next_y
         
     def get_test_batch(self):
@@ -271,7 +274,7 @@ class LocalTextCategorizationDataset(BaseTextCategorizationDataset):
         """
         i = self.test_batch_index
         # takes x_train between i * batch_size to (i + 1) * batch_size, and apply preprocess_text
-        next_x = self.x_test.iloc[i*self.batch_size:(i+1)*self.batch_size]
+        next_x = self.preprocess_text(self.x_test[i*self.batch_size:(i+1)*self.batch_size])
         # takes y_train between i * batch_size to (i + 1) * batch_size
         next_y = self.y_test[i*self.batch_size:(i+1)*self.batch_size]
         # When we reach the max num batches, we start anew
