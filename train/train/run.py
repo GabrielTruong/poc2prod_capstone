@@ -64,9 +64,6 @@ def train(dataset_path, train_conf, model_path, add_timestamp):
     scores = model.evaluate(dataset.get_test_sequence(), verbose=0)
 
     logger.info("Test Accuracy: {:.2f}".format(scores[1] * 100))
-    print()
-    print("ici,",scores)
-    print()
     
     # create folder artefacts_path
     os.makedirs("train/data/artefacts/"+artefacts_path)
