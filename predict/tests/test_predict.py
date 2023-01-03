@@ -48,8 +48,8 @@ class TestTrain(unittest.TestCase):
         # we create a temporary file to store artefacts
         with tempfile.TemporaryDirectory() as model_dir:
             # run a training
-            accuracy, _ = run.train("fake",params,model_path="test",add_timestamp=True)
-        model = TextPredictionModel.from_artefacts("test/2023-01-02-19-55-50")
+            accuracy, _ = run.train("fake",params,model_path=model_dir,add_timestamp=True)
+        model = TextPredictionModel.from_artefacts("/train/data/artefacts/test/2023-01-02-19-55-50")
         predictions = model.predict(["Is it possible to execute the procedure of a function in the scope of the caller?",
                 "ruby on rails: how to change BG color of options in select list, ruby-on-rails"],
                 top_k=1)
