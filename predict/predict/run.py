@@ -30,22 +30,21 @@ class TextPredictionModel:
         """
 
         # load model
-        print("path",artefacts_path)
-        model = load_model(f"train/data/artefacts/{artefacts_path}/model.h5")
+        model = load_model(f"{artefacts_path}/model.h5")
 
         # load params
-        param_file = open(f"train/data/artefacts/{artefacts_path}/params.json")
+        param_file = open(f"{artefacts_path}/params.json")
         params = json.load(param_file)
         #params = json.loads(f"train/data/artefacts/{artefacts_path}/params.json")
 
         # load labels_to_index
-        index_file = open(f"train/data/artefacts/{artefacts_path}/labels_index.json")
+        index_file = open(f"{artefacts_path}/labels_index.json")
         labels_to_index = json.load(index_file)
         #labels_to_index = json.loads(f"train/data/artefacts/{artefacts_path}/labels_index.json")
 
         return cls(model, params, labels_to_index)
 
-    def predict(self, text_list, top_k=1):
+    def predict(self, text_list, top_k=3):
         """
             predict top_k tags for a list of texts
             :param text_list: list of text (questions from stackoverflow)
@@ -58,19 +57,15 @@ class TextPredictionModel:
 
         # embed text_list
         embeddings = embed(text_list)
-        print(embeddings.shape)
 
         # predict tags indexes from embeddings
         tag_pred = self.model.predict(embeddings)
-        print("tag pred: ",tag_pred)
         # from tags indexes compute top_k tags for each text
         tags_indexes = argsort(tag_pred)
-        print("tags index here: ",tags_indexes)
-        print("labels_index: ",self.labels_to_index)
-            
-        predictions = [self.labels_to_index[str(index[-top_k])] for index in tags_indexes]
-        print(predictions)
+        top_tags_indexes = tags_indexes[0][-top_k:]
 
+            
+        predictions = [self.labels_index_inv[index] for index in top_tags_indexes]
         logger.info("Prediction done in {:2f}s".format(time.time() - tic))
 
         return predictions
