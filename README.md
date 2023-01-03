@@ -20,3 +20,9 @@ python -m unittest train.tests.test_model_train
 ```bash
 python -m unittest preprocessing.tests.test_utils
 ```
+
+**Problem with module error**
+add python files to python path
+```bash
+export PYTHONPATH=$PYTHONPATH:/home/dev/python-files
+```
