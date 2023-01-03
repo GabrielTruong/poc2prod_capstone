@@ -26,3 +26,5 @@ add python files to python path
 ```bash
 export PYTHONPATH=$PYTHONPATH:/home/dev/python-files
 ```
+
+**CHECK SETUPTOOLS**
