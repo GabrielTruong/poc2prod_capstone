@@ -27,4 +27,16 @@ add python files to python path
 export PYTHONPATH=$PYTHONPATH:/home/dev/python-files
 ```
 
+**Train model**
+```
+python train/train/run.py "train/data/training-data/stackoverflow_posts.csv" train/conf/train-conf.yml "train/data/artefacts/train/"
+```
+
 **CHECK SETUPTOOLS**
+
+RESTE à FAIRE:
+- Revoir les path pour l'artefact
+- Revoir le fichier predict car bancal
+- Faire fonctionner l'app flask avec curl et UI
+- Dockeriser l'app
+- Airflow
