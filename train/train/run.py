@@ -48,10 +48,10 @@ def train(dataset_path, train_conf, model_path, add_timestamp):
     # add an output layer (multiclass classification problem)
     model = Sequential([
         Dense(units=train_conf['dense_dim'],activation="relu",input_shape=(768,)),
-        Dense(units=dataset.get_num_labels(),activation="softmax")
+        Dense(units=dataset.get_num_labels(),activation="sigmoid")
     ])
 
-    model.compile(optimizer="adam",loss="categorical_crossentropy",metrics=["accuracy"])
+    model.compile(optimizer="adam",loss="binary_crossentropy",metrics=["accuracy"])
     # model fit using data sequences
     train_history = model.fit(
         dataset.get_train_sequence(), 
@@ -64,29 +64,28 @@ def train(dataset_path, train_conf, model_path, add_timestamp):
     scores = model.evaluate(dataset.get_test_sequence(), verbose=0)
 
     logger.info("Test Accuracy: {:.2f}".format(scores[1] * 100))
-    print()
-    print("ici,",scores)
-    print()
     
     # create folder artefacts_path
-    os.makedirs("train/data/artefacts/"+artefacts_path)
+    
+    os.chdir("/home/lapbeer/Documents/epf/5A/poc2prod/poc2prod_capstone/train/data/artefacts")
+    os.makedirs(artefacts_path)
 
     # save model in artefacts folder, name model.h5
-    model.save(f"train/data/artefacts/{artefacts_path}/model.h5")
+    model.save(f"{artefacts_path}/model.h5",save_format = 'h5')
     
     # save train_conf used in artefacts_path/params.json
-    with open(f'train/data/artefacts/{artefacts_path}/params.json', 'w') as f:
+    with open(f'{artefacts_path}/params.json', 'w') as f:
         json.dump(train_conf, f)
 
 
     # save labels index in artefacts_path/labels_index.json
-    with open(f'train/data/artefacts/{artefacts_path}/labels_index.json', 'w') as f:
-        labels_index = dataset.get_index_to_label_map()
+    with open(f'{artefacts_path}/labels_index.json', 'w') as f:
+        labels_index = dataset.get_label_to_index_map()
         json.dump(labels_index, f)
         
     # train_history.history is not JSON-serializable because it contains numpy arrays
     serializable_hist = {k: [float(e) for e in v] for k, v in train_history.history.items()}
-    with open(os.path.join(f"train/data/artefacts/"+artefacts_path, "train_output.json"), "w") as f:
+    with open(os.path.join(f"{artefacts_path}/train_output.json"), "w") as f:
         json.dump(serializable_hist, f)
 
     return scores[1], artefacts_path

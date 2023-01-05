@@ -4,7 +4,8 @@ import os
 import time
 from collections import OrderedDict
 
-from keras.models import load_model
+import tensorflow as tf
+from tensorflow.keras.models import load_model
 from numpy import argsort
 
 from preprocessing.preprocessing.embeddings import embed
@@ -27,21 +28,23 @@ class TextPredictionModel:
             from training artefacts, returns a TextPredictionModel object
             :param artefacts_path: path to training artefacts
         """
-        # TODO: CODE HERE
+
         # load model
-        model = load_model.load(artefacts_path/"model.h5")
+        model = load_model(f"{artefacts_path}/model.h5")
 
-        # TODO: CODE HERE
         # load params
-        params = json.load(artefacts_path/"params.json")
+        param_file = open(f"{artefacts_path}/params.json")
+        params = json.load(param_file)
+        #params = json.loads(f"train/data/artefacts/{artefacts_path}/params.json")
 
-        # TODO: CODE HERE
         # load labels_to_index
-        labels_to_index = json.load(artefacts_path/"labels_index.json")
+        index_file = open(f"{artefacts_path}/labels_index.json")
+        labels_to_index = json.load(index_file)
+        #labels_to_index = json.loads(f"train/data/artefacts/{artefacts_path}/labels_index.json")
 
         return cls(model, params, labels_to_index)
 
-    def predict(self, text_list, top_k=5):
+    def predict(self, text_list, top_k=3):
         """
             predict top_k tags for a list of texts
             :param text_list: list of text (questions from stackoverflow)
@@ -49,21 +52,20 @@ class TextPredictionModel:
         """
         tic = time.time()
 
+
         logger.info(f"Predicting text_list=`{text_list}`")
 
-        # TODO: CODE HERE
         # embed text_list
         embeddings = embed(text_list)
 
-        # TODO: CODE HERE
         # predict tags indexes from embeddings
         tag_pred = self.model.predict(embeddings)
-
-        # TODO: CODE HERE
         # from tags indexes compute top_k tags for each text
-        tags_indexes = argsort(tag_pred)[-top_k:]
-        predictions = [self.labels_index_inv[index] for index in tags_indexes]
-         
+        tags_indexes = argsort(tag_pred)
+        top_tags_indexes = tags_indexes[0][-top_k:]
+
+            
+        predictions = [self.labels_index_inv[index] for index in top_tags_indexes]
         logger.info("Prediction done in {:2f}s".format(time.time() - tic))
 
         return predictions
