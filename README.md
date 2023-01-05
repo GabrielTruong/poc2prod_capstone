@@ -25,6 +25,8 @@ python -m unittest preprocessing.tests.test_utils
 add python files to python path
 ```bash
 export PYTHONPATH=$PYTHONPATH:/home/dev/python-files
+
+export PYTHONPATH=$PYTHONPATH:/home/lapbeer/Documents/epf/5A/poc2prod/poc2prod_capstone
 ```
 
 **Train model**
