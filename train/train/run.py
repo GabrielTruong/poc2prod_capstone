@@ -48,10 +48,10 @@ def train(dataset_path, train_conf, model_path, add_timestamp):
     # add an output layer (multiclass classification problem)
     model = Sequential([
         Dense(units=train_conf['dense_dim'],activation="relu",input_shape=(768,)),
-        Dense(units=dataset.get_num_labels(),activation="softmax")
+        Dense(units=dataset.get_num_labels(),activation="sigmoid")
     ])
 
-    model.compile(optimizer="adam",loss="categorical_crossentropy",metrics=["accuracy"])
+    model.compile(optimizer="adam",loss="binary_crossentropy",metrics=["accuracy"])
     # model fit using data sequences
     train_history = model.fit(
         dataset.get_train_sequence(), 
@@ -66,6 +66,7 @@ def train(dataset_path, train_conf, model_path, add_timestamp):
     logger.info("Test Accuracy: {:.2f}".format(scores[1] * 100))
     
     # create folder artefacts_path
+    
     os.chdir("/home/lapbeer/Documents/epf/5A/poc2prod/poc2prod_capstone/train/data/artefacts")
     os.makedirs(artefacts_path)
 
