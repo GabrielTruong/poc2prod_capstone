@@ -48,7 +48,6 @@ curl http://127.0.0.1:5000/predict?text=<INPUT TEXT>
 
 ## Useful command
 
-### Running tests
 **1. Test on predict**
 ```bash
 python -m unittest predict.tests.test_predict
@@ -76,6 +75,11 @@ export PYTHONPATH=$PYTHONPATH:/home/lapbeer/Documents/epf/5A/poc2prod/poc2prod_c
 **Train model**
 ```
 python train/train/run.py "train/data/training-data/stackoverflow_posts.csv" train/conf/train-conf.yml "train/data/artefacts/train/"
+```
+
+**Activate conda environment**
+```bash
+conda activate ENVNAME
 ```
 
 **CHECK SETUPTOOLS**
