@@ -1,5 +1,5 @@
 from flask import Flask, request, render_template
-
+import json
 from run import TextPredictionModel
 
 
@@ -17,13 +17,23 @@ def get_prediction():
     
     return str(predictions)
 
-@app.route("/predict",methods=["GET"])
+@app.route("/get_prediction",methods=["GET"])
 def request_prediction():
     model = TextPredictionModel.from_artefacts("train/data/artefacts/train/2023-01-04-17-25-24")
     text = request.args.get('text')
     predictions = model.predict([text],top_k=1)
 
     return str(predictions)
+
+@app.route('/predict', methods=['POST'])
+def request_post():
+    body=json.loads(request.get_data())
+    text_list = body['text']
+    top_k = body['top_k']
+    textPredictionModel = TextPredictionModel.from_artefacts('train/data/artefacts/train/2023-01-04-17-25-24')
+    label_list = textPredictionModel.predict(text_list, top_k=top_k)
+    print(label_list)
+    return str(label_list)
 
 
 if __name__ == '__main__':
