@@ -41,9 +41,20 @@ Use the link http://127.0.0.1:5000/ and use the form to predict the input text.
 
 **2. Using a curl request**
 
-You can use a HTTP request by sending the input text via the parameter string `text` as shown below:
+The route is under http://localhost/predict. It is a POST route that needs a JSON body with 2 specific arguments:
+
+- `texts` : a list of string. Each string value correspond to the text you want to predict.
+- `top_k` : The limit number of the prediction you want to return
+
+**POST**
 ```curl
-curl http://127.0.0.1:5000/predict?text=<INPUT TEXT>
+curl -X POST -H "Content-Type: application/json" -d '{"text": [TEXT1,TEXT2], "top_k":NUMBER_OF_CLASS}' http://localhost:5000/predict
+```
+
+You can use a simple HTTP GET request by sending the input text via the parameter string `text` as shown below:
+**GET**
+```curl
+curl http://127.0.0.1:5000/get_prediction?text=<INPUT TEXT>
 ```
 
 ## Useful command
